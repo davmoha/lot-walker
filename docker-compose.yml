@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lotwalker-db
+    environment:
+      POSTGRES_DB: lotwalker
+      POSTGRES_USER: lotwalker_admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-lotwalker_dev_pw}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    networks:
+      - lotwalker-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lotwalker_admin -d lotwalker"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: lotwalker-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - lotwalker-net
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: lotwalker-ollama
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./infra/ollama/entrypoint.sh:/entrypoint.sh
+    entrypoint: ["/bin/bash", "/entrypoint.sh"]
+    ports:
+      - "11434:11434"
+    networks:
+      - lotwalker-net
+
+networks:
+  lotwalker-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  ollama_data:
