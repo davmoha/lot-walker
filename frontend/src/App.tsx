@@ -20,6 +20,8 @@ import TechniciansPage from './pages/admin/TechniciansPage';
 import SettingsPage from './pages/admin/SettingsPage';
 import ImportPage from './pages/ImportPage';
 import WalkthroughPage from './pages/WalkthroughPage';
+import KioskPage from './pages/KioskPage';
+import KioskSetupPage from './pages/admin/KioskSetupPage';
 
 export default function App() {
   return (
@@ -60,9 +62,13 @@ export default function App() {
                 <Route path="/admin/technicians" element={<TechniciansPage />} />
                 <Route path="/admin/settings" element={<SettingsPage />} />
                 <Route path="/admin/import" element={<ImportPage />} />
+                <Route path="/admin/kiosk" element={<KioskSetupPage />} />
               </Route>
             </Route>
           </Route>
+
+          {/* Kiosk — standalone, no AppLayout */}
+          <Route path="/kiosk/:department_id" element={<KioskPage />} />
 
           {/* Default redirect */}
           <Route path="/" element={<Navigate to="/login" replace />} />
