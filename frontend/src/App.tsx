@@ -22,6 +22,7 @@ import ImportPage from './pages/ImportPage';
 import WalkthroughPage from './pages/WalkthroughPage';
 import KioskPage from './pages/KioskPage';
 import KioskSetupPage from './pages/admin/KioskSetupPage';
+import ReportsPage from './pages/ReportsPage';
 
 export default function App() {
   return (
@@ -49,6 +50,7 @@ export default function App() {
             <Route element={<AppLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/walkthrough" element={<WalkthroughPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
 
               {/* Super Admin only */}
               <Route element={<ProtectedRoute allowedRoles={['super_admin']} />}>
