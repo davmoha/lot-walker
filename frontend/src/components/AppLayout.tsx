@@ -10,6 +10,7 @@ import {
   AlertCircle,
   BarChart3,
   Settings,
+  Upload,
 } from 'lucide-react';
 
 const navItems = [
@@ -21,6 +22,7 @@ const navItems = [
   { to: '/inventory', icon: Car, label: 'Inventory', roles: ['company_admin', 'employee', 'super_admin'] },
   { to: '/issues', icon: AlertCircle, label: 'Issues', roles: ['company_admin', 'employee', 'super_admin'] },
   { to: '/reports', icon: BarChart3, label: 'Reports', roles: ['company_admin', 'super_admin'] },
+  { to: '/admin/import', icon: Upload, label: 'CSV Import', roles: ['company_admin', 'super_admin'] },
   { to: '/admin/settings', icon: Settings, label: 'Settings', roles: ['company_admin', 'super_admin'] },
 ];
 

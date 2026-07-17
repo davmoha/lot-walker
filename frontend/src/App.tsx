@@ -18,6 +18,7 @@ import UsersPage from './pages/admin/UsersPage';
 import DepartmentsPage from './pages/admin/DepartmentsPage';
 import TechniciansPage from './pages/admin/TechniciansPage';
 import SettingsPage from './pages/admin/SettingsPage';
+import ImportPage from './pages/ImportPage';
 
 export default function App() {
   return (
@@ -56,6 +57,7 @@ export default function App() {
                 <Route path="/admin/departments" element={<DepartmentsPage />} />
                 <Route path="/admin/technicians" element={<TechniciansPage />} />
                 <Route path="/admin/settings" element={<SettingsPage />} />
+                <Route path="/admin/import" element={<ImportPage />} />
               </Route>
             </Route>
           </Route>

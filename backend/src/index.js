@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
 import authRoutes from './routes/auth.routes.js';
+import importRoutes from './routes/import.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import apiRoutes from './routes/api.routes.js';
 
@@ -31,6 +32,7 @@ const authLimiter = rateLimit({
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api', apiRoutes);
+app.use('/api/import', importRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
