@@ -13,6 +13,12 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import SuperAdminPage from './pages/SuperAdminPage';
 
+// Admin pages
+import UsersPage from './pages/admin/UsersPage';
+import DepartmentsPage from './pages/admin/DepartmentsPage';
+import TechniciansPage from './pages/admin/TechniciansPage';
+import SettingsPage from './pages/admin/SettingsPage';
+
 export default function App() {
   return (
     <AuthProvider>
@@ -42,6 +48,14 @@ export default function App() {
               {/* Super Admin only */}
               <Route element={<ProtectedRoute allowedRoles={['super_admin']} />}>
                 <Route path="/super-admin" element={<SuperAdminPage />} />
+              </Route>
+
+              {/* Company Admin + Super Admin */}
+              <Route element={<ProtectedRoute allowedRoles={['company_admin', 'super_admin']} />}>
+                <Route path="/admin/users" element={<UsersPage />} />
+                <Route path="/admin/departments" element={<DepartmentsPage />} />
+                <Route path="/admin/technicians" element={<TechniciansPage />} />
+                <Route path="/admin/settings" element={<SettingsPage />} />
               </Route>
             </Route>
           </Route>
