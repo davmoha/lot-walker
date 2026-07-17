@@ -1,0 +1,48 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Lot Walker — Caddyfile
+# Replace yourdomain.com with your actual domain.
+# Caddy automatically obtains and renews Let's Encrypt TLS certificates.
+# ─────────────────────────────────────────────────────────────────────────────
+
+yourdomain.com {
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+
+    # Backend API
+    handle /api/* {
+        reverse_proxy backend:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+        }
+    }
+
+    # Health check passthrough
+    handle /health {
+        reverse_proxy backend:3001
+    }
+
+    # Frontend (React SPA — serve index.html for all non-API routes)
+    handle {
+        reverse_proxy frontend:80
+    }
+
+    # Logging
+    log {
+        output file /data/logs/access.log {
+            roll_size 100mb
+            roll_keep 5
+        }
+        format json
+    }
+}
+
+# Redirect www to apex
+www.yourdomain.com {
+    redir https://yourdomain.com{uri} permanent
+}

@@ -1,0 +1,152 @@
+version: '3.9'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Lot Walker — Production Docker Compose
+# Requires: .env.prod (copy from .env.prod.example and fill in secrets)
+# Usage:    docker compose -f docker-compose.prod.yml up -d
+# ─────────────────────────────────────────────────────────────────────────────
+
+networks:
+  lot-walker-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  ollama_data:
+  caddy_data:
+  caddy_config:
+  frontend_build:
+
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lotwalkr}
+      POSTGRES_USER: ${POSTGRES_USER:-lotwalkr}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    networks:
+      - lot-walker-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lotwalkr} -d ${POSTGRES_DB:-lotwalkr}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ───────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD} --save 60 1 --loglevel warning
+    env_file: .env.prod
+    volumes:
+      - redis_data:/data
+    networks:
+      - lot-walker-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Ollama ──────────────────────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./infra/ollama/entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    networks:
+      - lot-walker-net
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # Remove the deploy.resources block if no GPU is available
+
+  # ── Backend API ─────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-lotwalkr}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lotwalkr}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      OLLAMA_URL: http://ollama:11434
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - lot-walker-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Frontend (Nginx static) ─────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - lot-walker-net
+    depends_on:
+      - backend
+
+  # ── Caddy (reverse proxy + automatic HTTPS) ─────────────────────────────────
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - lot-walker-net
+    depends_on:
+      - backend
+      - frontend
+
+  # ── PostgreSQL Backup (daily to S3) ────────────────────────────────────────
+  pg-backup:
+    image: eeshugerman/postgres-backup-s3:16
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      SCHEDULE: "@daily"
+      S3_REGION: ${BACKUP_S3_REGION:-us-east-1}
+      S3_BUCKET: ${BACKUP_S3_BUCKET}
+      S3_PREFIX: lot-walker-backups
+      POSTGRES_HOST: postgres
+      POSTGRES_DATABASE: ${POSTGRES_DB:-lotwalkr}
+      POSTGRES_USER: ${POSTGRES_USER:-lotwalkr}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      AWS_ACCESS_KEY_ID: ${BACKUP_AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${BACKUP_AWS_SECRET_ACCESS_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - lot-walker-net
