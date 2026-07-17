@@ -4,9 +4,10 @@ import { enqueueIssue } from '../lib/offlineQueue';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import VinScanner from '../components/VinScanner';
+import VoiceButton from '../components/VoiceButton';
 import {
   Camera, CameraOff, Search, AlertCircle, CheckCircle,
-  Loader2, Wifi, WifiOff, Mic, ChevronDown,
+  Loader2, Wifi, WifiOff, ChevronDown,
 } from 'lucide-react';
 import type { Department } from '../types';
 
@@ -255,6 +256,23 @@ export default function WalkthroughPage() {
               className="w-full bg-gray-900 border border-gray-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition placeholder-gray-500 resize-none"
             />
           </div>
+
+          {/* Voice input */}
+          {vehicle && (
+            <div className="flex items-center gap-4 py-2">
+              <VoiceButton
+                inventoryId={vehicle.id}
+                onIssueCreated={(result) => {
+                  setLastSaved(`${vehicle.make || ''} ${vehicle.model || ''} — ${result.description.slice(0, 40)}`);
+                  setMode('success');
+                }}
+              />
+              <div>
+                <p className="text-sm font-medium text-white">Voice Issue</p>
+                <p className="text-gray-500 text-xs">Hold the mic button and describe the issue. AI will route it automatically.</p>
+              </div>
+            </div>
+          )}
 
           {/* Department routing */}
           <div>

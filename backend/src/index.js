@@ -7,6 +7,7 @@ import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth.routes.js';
 import importRoutes from './routes/import.routes.js';
 import kioskRoutes from './routes/kiosk.routes.js';
+import voiceRoutes from './routes/voice.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import apiRoutes from './routes/api.routes.js';
 
@@ -35,6 +36,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api', apiRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/kiosk', kioskRoutes);
+app.use('/api/voice', voiceRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
