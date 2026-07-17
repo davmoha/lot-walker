@@ -11,10 +11,12 @@ import {
   BarChart3,
   Settings,
   Upload,
+  ScanLine,
 } from 'lucide-react';
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', roles: ['company_admin', 'employee', 'super_admin'] },
+  { to: '/walkthrough', icon: ScanLine, label: 'Lot Walkthrough', roles: ['company_admin', 'employee', 'super_admin'] },
   { to: '/super-admin', icon: Building2, label: 'Companies', roles: ['super_admin'] },
   { to: '/admin/users', icon: Users, label: 'Users', roles: ['company_admin', 'super_admin'] },
   { to: '/admin/departments', icon: Building2, label: 'Departments', roles: ['company_admin', 'super_admin'] },

@@ -76,6 +76,30 @@ export async function upsertVehicle(req, res) {
   }
 }
 
+// GET /api/inventory/lookup?q=VIN_OR_STOCK
+export async function lookupVehicle(req, res) {
+  try {
+    const { q } = req.query;
+    if (!q) return res.status(400).json({ error: 'q parameter required.' });
+    const clean = q.replace(/[\s-]/g, '').replace(/O/g, '0').toUpperCase();
+    const row = await withCompanyContext(req.companyId, async (client) => {
+      const r = await client.query(
+        `SELECT id, vin, stock_number, make, model, trim, color, mileage, status
+         FROM inventory
+         WHERE company_id = current_setting('app.current_company_id')::uuid
+           AND (UPPER(vin) = $1 OR UPPER(stock_number) = $1)
+         LIMIT 1`,
+        [clean]
+      );
+      return r.rows[0] || null;
+    });
+    return res.json(row);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+}
+
 export async function deleteVehicle(req, res) {
   try {
     const { id } = req.params;

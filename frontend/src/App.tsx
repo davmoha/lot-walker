@@ -19,6 +19,7 @@ import DepartmentsPage from './pages/admin/DepartmentsPage';
 import TechniciansPage from './pages/admin/TechniciansPage';
 import SettingsPage from './pages/admin/SettingsPage';
 import ImportPage from './pages/ImportPage';
+import WalkthroughPage from './pages/WalkthroughPage';
 
 export default function App() {
   return (
@@ -45,6 +46,7 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/walkthrough" element={<WalkthroughPage />} />
 
               {/* Super Admin only */}
               <Route element={<ProtectedRoute allowedRoles={['super_admin']} />}>
