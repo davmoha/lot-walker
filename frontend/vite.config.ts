@@ -11,5 +11,17 @@ export default defineConfig({
         changeOrigin: true,
       }
     }
-  }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'charts': ['recharts'],
+          'scanner': ['html5-qrcode'],
+          'ui': ['lucide-react', 'react-hot-toast', 'axios'],
+        },
+      },
+    },
+  },
 })
